@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 128 128" width="128" height="128">
+	<defs >
+		<mask id="icon">
+			<rect width="100%" height="100%" fill="#000"></rect>
+			<path d="
+				m22 9 h84 q22 0, 22 22
+				v66 q0 22, -22 22
+				h-84 q-22 0, -22 -22
+				v-66 q0 -22, 22 -22 z
+			" fill="#fff"></path>
+			<path d="
+				m19.4375 35 h89.125 q3.4375 0, 3.4375 3.4375
+				v54.25 q0 10.3125, -10.3125 10.3125
+				h-75.375 q-10.3125 0, -10.3125 -10.3125
+				v-54.25 q0 -3.4375, 3.4375 -3.4375 z
+			" fill="#000"></path>
+			<circle fill="#000" r="6" cy="22" cx="76"></circle>
+			<circle fill="#000" r="6" cy="22" cx="92"></circle>
+			<circle fill="#000" r="6" cy="22" cx="108"></circle>
+		</mask>
+	</defs>
+	<rect width="100%" height="100%" fill="context-fill rgba(255,255,255,0.7)" fill-opacity="context-fill-opacity" mask="url(#icon)"></rect>
+</svg>

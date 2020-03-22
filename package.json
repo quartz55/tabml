@@ -1,0 +1,35 @@
+{
+  "name": "tabml",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "bsb -make-world",
+    "start": "bsb -make-world -w -ws _ ",
+    "clean": "bsb -clean-world",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "parcel watch manifest.json pages/tabml.html"
+  },
+  "keywords": [
+    "BuckleScript",
+    "ReasonReact",
+    "reason-react"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bs-abstract": "^1.0.0",
+    "bs-css": "^12.0.1",
+    "bs-css-emotion": "^1.0.1",
+    "bs-let": "^0.1.16",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
+    "reason-react": ">=0.7.0",
+    "relude": "^0.57.1"
+  },
+  "devDependencies": {
+    "bs-platform": "^7.2.2",
+    "bsb-js": "^1.1.7",
+    "parcel-bundler": "^1.12.4",
+    "parcel-plugin-web-extension": "^1.6.1",
+    "web-ext": "^4.1.0"
+  }
+}

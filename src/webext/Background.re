@@ -51,10 +51,12 @@ let run = () => {
             ignore(w);
           });
      });
-  Core.main();
+  Core.run();
 };
 
-[@bs.val] [@bs.scope "document"]
-external addEventListener: (string, 'a => unit) => unit = "addEventListener";
+// [@bs.val] [@bs.scope "document"]
+// external addEventListener: (string, 'a => unit) => unit = "addEventListener";
 
-addEventListener("DOMContentLoaded", _ => run());
+// addEventListener("DOMContentLoaded", _ => run());
+
+run();

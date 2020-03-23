@@ -1,9 +1,8 @@
-open Relude.Globals;
+open Globals;
 module Option = {
   include Option;
   let let_ = bind;
 };
-open Browser.Globals;
 
 module Node = Core_Tree_Node;
 
@@ -12,7 +11,7 @@ module TZip = {
   include Relude.TreeZipper;
   let appendChild = (child, {children, _} as z) => {
     ...z,
-    children: List.append(child, children),
+    children: children @ [child],
   };
 };
 
@@ -71,29 +70,19 @@ let promoteNodeChildren = (TZip.{rightSiblings, children} as z) => {
 let deleteNode = (~promoteChildren=false) =>
   (promoteChildren ? promoteNodeChildren : id) >> TZip.delete;
 
-let zipperOfTabIndex = (idx, windowZipper) => {
-  if (!(windowZipper |> TZip.getFocusValue |> Node.isWindow)) {
-    failwith("must be a zipper of a window");
-  };
-  let rec dft = (curr, z: TZip.t(Node.t)) =>
-    curr < idx
-      ? TZip.moveDown(z)
-        |> Option.map(dft(curr + 1))
-        |> Option.map(
-             fun
-             | `NotFound(idx) =>
-               TZip.moveRight(z)
-               |> Option.map(dft(idx + 1))
-               |> Option.getOrElse(`NotFound(idx))
-             | `Found(z) => `Found(z),
-           )
-        |> Option.orElseLazy(~fallback=() =>
-             TZip.moveRight(z) |> Option.map(dft(curr + 1))
-           )
-        |> Option.getOrElse(`NotFound(curr))
-      : `Found(z);
-  dft(0, windowZipper |> TZip.moveDown |> Option.getOrThrow);
-};
+let appendWindowZipper = (w, t) =>
+  TZip.fromTree(t)
+  |> TZip.moveBy([`Down(1), `RightToEnd])
+  |> Option.flatMap(TZip.insertWithPushLeft(w))
+  |> Option.getOrElseLazy(() =>
+       TZip.{
+         ancestors: [([], T.getValue(t), [])],
+         leftSiblings: [],
+         focus: w,
+         rightSiblings: [],
+         children: [],
+       }
+     );
 
 let findWindowWithId = (windowId, t) =>
   TZip.fromTree(t)
@@ -102,9 +91,15 @@ let findWindowWithId = (windowId, t) =>
        | Window({id: Some(id), _}) when Int.eq(id, windowId) => true
        | _ => false
        }
-     )
-  |> Option.tapNone(() =>
-       failwith(Format.sprintf("Couldn't find window with id %d", windowId))
+     );
+
+let findWindowWithIdOrAppend = (windowId, t) =>
+  findWindowWithId(windowId, t)
+  |> Option.getOrElseLazy(() =>
+       appendWindowZipper(
+         BT.Window.placeholder(windowId) |> Node.ofWindow,
+         t,
+       )
      );
 
 let modifyWindowWithId = (fn, windowId, t) => {
@@ -123,7 +118,7 @@ let removeWindowWithId = (windowId, t) =>
   |> Option.getOrElse(t);
 
 // TODO Try searching direct children of sessions first
-let findWindowHeuristically = (windowId, t) => {};
+// let findWindowHeuristically = (windowId, t) => {};
 
 let findTabWithId = (tabId, t) =>
   TZip.fromTree(t)
@@ -132,9 +127,6 @@ let findTabWithId = (tabId, t) =>
        | Tab({id: Some(id), _}) when Int.eq(id, tabId) => true
        | _ => false
        }
-     )
-  |> Option.tapNone(() =>
-       failwith(Format.sprintf("Couldn't find tab with id %d", tabId))
      );
 
 let rec findTabWindow = tabZip =>
@@ -159,6 +151,30 @@ let modifyTabWithId = (fn, tabId, t) =>
 let setTabWithId = (tabId, newTab, t) =>
   modifyTabWithId(_ => newTab, tabId, t);
 
+let zipperOfTabIndex = (idx, windowZipper) => {
+  if (!(windowZipper |> TZip.getFocusValue |> Node.isWindow)) {
+    failwith("must be a zipper of a window");
+  };
+  let rec dft = (curr, z: TZip.t(Node.t)) =>
+    curr < idx
+      ? TZip.moveDown(z)
+        |> Option.map(dft(curr + 1))
+        |> Option.map(
+             fun
+             | `NotFound(idx) =>
+               TZip.moveRight(z)
+               |> Option.map(dft(idx + 1))
+               |> Option.getOrElse(`NotFound(idx))
+             | `Found(z) => `Found(z),
+           )
+        |> Option.orElseLazy(~fallback=() =>
+             TZip.moveRight(z) |> Option.map(dft(curr + 1))
+           )
+        |> Option.getOrElse(`NotFound(curr))
+      : `Found(z);
+  dft(0, windowZipper |> TZip.moveDown |> Option.getOrThrow);
+};
+
 let moveTabWithIdToIdx = (~window=`Same, tabId, idx, t) => {
   let%Option tabZip = findTabWithId(tabId, t);
   let%Option winZip =
@@ -166,19 +182,20 @@ let moveTabWithIdToIdx = (~window=`Same, tabId, idx, t) => {
     |> Option.flatMap(
          switch (window) {
          | `Same => findTabWindow
-         | `OfId(winId) => rebuild >> findWindowWithId(winId)
+         | `OfId(winId) =>
+           rebuild >> findWindowWithIdOrAppend(winId) >> Option.pure
          },
        );
   let tab = tabZip |> TZip.getFocusValue;
   let%Option updatedWinZip =
-    switch (zipperOfTabIndex(idx, winZip)) {
-    | `NotFound(lastIdx) when lastIdx == idx - 1 =>
-      winZip
-      |> TZip.moveBy([`Down(1), `RightToEnd])
-      |> Option.flatMap(TZip.insertTreeWithPushLeft(T.pure(tab)))
-    | `Found(z) => TZip.insertTreeWithPushRight(T.pure(tab), z)
-    | `NotFound(_) => failwith("unreachable?")
-    };
+    winZip
+    |> findNodeIndexed(~idxPred=Node.isTab, (_, i) => i == idx)
+    |> Option.flatMap(((z, _)) =>
+         TZip.insertTreeWithPushRight(T.pure(tab), z)
+       )
+    |> Option.orElseLazy(~fallback=() =>
+         Some(TZip.appendChild(T.pure(tab), winZip))
+       );
   Some(rebuild(updatedWinZip));
 };
 
@@ -186,7 +203,7 @@ let addCreatedTab = (tab: BTab.t, t) => {
   let winId = tab.windowId;
   // TODO
   // let%Option winZip = findWindowHeuristically(winId, t);
-  let%Option winZip = findWindowWithId(winId, t);
+  let winZip = findWindowWithIdOrAppend(winId, t);
   let tabNode = Node.ofTab(tab) |> T.pure;
   switch (tab.openerTabId) {
   | Some(opener) =>
@@ -211,9 +228,9 @@ let addCreatedTab = (tab: BTab.t, t) => {
     winZip
     |> findNodeIndexed(~idxPred=Node.isTab, (_, i) => i == idx)
     |> Option.flatMap(((z, _)) => TZip.insertTreeWithPushRight(tabNode, z))
-    |> Option.orElseLazy(~fallback=() =>
+    |> Option.orElseLazy(~fallback=() => {
          Some(TZip.appendChild(tabNode, winZip))
-       )
+       })
     |> Option.map(rebuild);
   };
 };
@@ -265,7 +282,7 @@ let bootstrap = () => {
     };
 
     let node = Node.make(Window(w));
-    B.Tabs.(query(makeQueryObj(~windowId=Option.getOrThrow(w.id), ())))
+    B.Tabs.(query(makeQueryObj(~windowId=BWindow.id(w), ())))
     |> IOE.map(tabs => {
          Js.log2("setting up window", w);
          Js.log2("tabs", tabs);

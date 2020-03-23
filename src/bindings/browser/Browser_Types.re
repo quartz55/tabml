@@ -57,19 +57,28 @@ module Window = {
     title: option(string),
   };
 
+  let placeholder = id => {
+    alwaysOnTop: false,
+    focused: false,
+    id: Some(id),
+    tabs: [||],
+    title: None,
+  };
+
   let idOpt = ({id, _}) => id;
   let id = t => idOpt(t) |> Belt.Option.getExn;
 };
 
 module StorageArea = {
   type t;
+  type res('a) = Js.Dict.t('a);
 
-  [@bs.send.pipe: t] external get: string => Js.Promise.t(Js.t('a)) = "get";
+  [@bs.send.pipe: t] external get: string => Js.Promise.t(res('a)) = "get";
   [@bs.send.pipe: t]
-  external getMany: array(string) => Js.Promise.t(Js.t('a)) = "get";
-  [@bs.send.pipe: t] external getAll: unit => Js.Promise.t(Js.t('a)) = "get";
+  external getMany: array(string) => Js.Promise.t(res('a)) = "get";
+  [@bs.send.pipe: t] external getAll: unit => Js.Promise.t(res('a)) = "get";
 
-  [@bs.send.pipe: t] external set: Js.t('a) => Js.Promise.t(unit) = "set";
+  [@bs.send.pipe: t] external set: res('a) => Js.Promise.t(unit) = "set";
 
   [@bs.send.pipe: t] external remove: string => Js.Promise.t(unit) = "remove";
   [@bs.send.pipe: t]

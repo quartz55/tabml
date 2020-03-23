@@ -15,6 +15,7 @@
     "default_title": "tabml"
   },
   "background": {
-    "page": "pages/background.html"
+    "page": "pages/background.html",
+    "persistent": true
   }
 }

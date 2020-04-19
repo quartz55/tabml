@@ -1,0 +1,23 @@
+{
+  "manifest_version": 2,
+  "name": "tabml",
+  "version": "0.1.0",
+  "description": "TabsOutliner-like tab management suite for Firefox",
+
+  "permissions": ["tabs", "storage"],
+
+  "icons": {
+    "48": "icons/icon-light.svg",
+    "96": "icons/icon-light.svg"
+  },
+  "web_accessible_resources": ["pages/tabml.html"],
+
+  "browser_action": {
+    "default_icon": "icons/icon-light.svg",
+    "default_title": "tabml"
+  },
+  "background": {
+    "page": "pages/background.html",
+    "persistent": true
+  }
+}

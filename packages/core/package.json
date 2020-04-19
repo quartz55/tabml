@@ -1,0 +1,26 @@
+{
+  "name": "@tabml/core",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "bsb -make-world",
+    "start": "bsb -make-world -w",
+    "clean": "bsb -clean-world",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "BuckleScript",
+    "ReasonReact",
+    "reason-react"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bs-bastet": "^1.2.5",
+    "bs-let": "^0.1.16",
+    "bs-webext": "workspace:*",
+    "relude": "^0.59.0"
+  },
+  "devDependencies": {
+    "bs-platform": "^7.2.2"
+  }
+}

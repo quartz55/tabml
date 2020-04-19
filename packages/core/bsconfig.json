@@ -1,0 +1,19 @@
+{
+  "name": "@tabml/core",
+  "namespace": false,
+  "sources": {
+    "dir": "src",
+    "subdirs": true
+  },
+  "bsc-flags": ["-bs-super-errors", "-bs-no-version-header"],
+  "package-specs": [
+    {
+      "module": "commonjs",
+      "in-source": true
+    }
+  ],
+  "suffix": ".bs.js",
+  "ppx-flags": ["bs-let/ppx"],
+  "bs-dependencies": ["bs-webext", "bs-bastet", "relude"],
+  "refmt": 3
+}

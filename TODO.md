@@ -1,23 +1,33 @@
 # TabML
 
+Tree-style browser session manager webextension made in ReasonML.
+
 ### Backlog
 
-- [ ] Split into multiple packages 📦(yarn workspaces? lerna?)
-- [ ] v0.1.0-alpha-1 release
-- [ ] Messaging system for frontend generated events
-- [ ] Refactor Core (browser sync and frontend handling)
-- [ ] Granular Tab Update handling
-- [ ] Make background script an Event Page (chrome)
-- [ ] Test chrome build
+- [ ] Support for Firefox sidebar panel  
+- [ ] Design overhaul (make it pretty)  
+- [ ] Chrome build  
+- [ ] Persist state in localStorage  
+- [ ] Make background script an Event Page (chrome)  
 
 ### In Progress
 
-- [ ] Logging framework
-- [ ] Error handling (with logging)
-- [ ] Persist state in localStorage
+- [ ] Drag and Drop  
+- [ ] Suspend functionality  
+  - [ ] Synchronize with browser session (after reopen)  
+- [ ] Granular Tab Update handling  
+- [ ] v0.1.0-alpha-1 release  
 
 ### Done ✓
 
-- [x] Handle all browser generated events
-- [x] Add LICENCE.md
-- [x] Setup git repo
+- [x] More robust Store/Reducer/Dispatch logic  
+- [x] Collapse/Expand functionality  
+- [x] Monorepo  
+- [x] Refactor Core (browser sync and frontend handling)  
+- [x] Error handling (with logging)  
+- [x] Logging framework  
+- [x] Messaging system for frontend generated events  
+- [x] Handle all browser generated events  
+- [x] Add LICENCE.md  
+- [x] Setup git repo  
+

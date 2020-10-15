@@ -24,7 +24,8 @@
     "bs-bastet",
     "relude",
     "bs-css",
-    "bs-css-emotion"
+    "bs-css-emotion",
+    "restorative"
   ],
   "refmt": 3
 }

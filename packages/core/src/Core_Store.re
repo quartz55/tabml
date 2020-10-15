@@ -43,13 +43,13 @@ let make = (~reducer, ~init, ~backend, ~sub) => {
 let set: ('state, t('state, 'action, 'error)) => IO.t(unit, 'error) =
   (state, {backend, sub, _}) =>
     Backend.set(state, backend)
-    |> IO.tap(() => Logger.info(m => m("set")))
+    // |> IO.tap(() => Logger.info(m => m("set")))
     |> IO.tap(() => sub(state));
 
 let get: t('state, 'action, 'error) => IO.t('state, 'error) =
   ({init, backend, _} as t) =>
     Backend.get(backend)
-    |> IO.tap(_ => Logger.info(m => m("get")))
+    // |> IO.tap(_ => Logger.info(m => m("get")))
     |> IO.flatMap(
          fun
          | None => {
@@ -74,6 +74,8 @@ let dispatch: ('action, t('state, 'action, 'error)) => IO.t(unit, 'error) =
        );
 
 module Backends = {
+  // BUG I think there's some concurrency/data-race happening
+  // when accessing and mutating localStorage too quickly
   let localStorage = key => {
     let s = B.Storage.local;
     let get = () =>

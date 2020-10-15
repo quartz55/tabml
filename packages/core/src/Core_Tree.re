@@ -3,9 +3,8 @@ module Option = {
   include Option;
   let let_ = Option.bind;
 };
-
+module BAPI = Core_BAPI;
 module Node = Core_Tree_Node;
-
 module T = Relude.Tree;
 module TZip = {
   include Relude.TreeZipper;
@@ -99,6 +98,12 @@ let promoteNodeChildren = (TZip.{rightSiblings, children} as z) => {
 
 let deleteNode = (~promoteChildren=false) =>
   (promoteChildren ? promoteNodeChildren : id) >> TZip.delete;
+
+let popNode = (~promoteChildren=false, z) => {
+  let n =
+    promoteChildren ? T.pure(TZip.getFocusValue(z)) : TZip.getFocusTree(z);
+  deleteNode(~promoteChildren, z) |> Option.map(z => (n, z));
+};
 
 let appendWindowZipper = (w, t) =>
   TZip.fromTree(t)
@@ -272,20 +277,8 @@ let addCreatedTab = (tab: BTab.t, t) => {
   };
 };
 
-let getAllTabs = () =>
-  RJs.Promise.toIOLazy(() => B.Tabs.(query(makeQueryObj())))
-  |> IO.mapError(e => `BrowserError(e));
-
-let getAllWindows = () =>
-  RJs.Promise.toIOLazy(() => B.Windows.getAll())
-  |> IO.mapError(e => `BrowserError(e));
-
+// TODO this is going to need some cleanup
 let bootstrap = () => {
-  module IOE =
-    IO.WithError({
-      type t = [ | `BrowserError(Js.Promise.error)];
-    });
-
   let setupWindow = w => {
     let setupTabHierarchy = (parentId, tabs) => {
       let rec setupTabHierarchy' = (parentId, out, rest, nomatch) =>
@@ -327,7 +320,7 @@ let bootstrap = () => {
       BTabs.(query(makeQueryObj(~windowId=Option.getOrThrow(w.id), ())))
     )
     |> IO.mapError(e => `BrowserError(e))
-    |> IOE.map(tabs => {
+    |> IO.map(tabs => {
          Js.log2("setting up window", w);
          Js.log2("tabs", tabs);
          tabs
@@ -339,27 +332,46 @@ let bootstrap = () => {
        });
   };
 
-  getAllWindows()
-  |> IOE.flatMap(windows =>
+  BAPI.getAllWindows()
+  |> IO.flatMap(windows =>
        Array.toList(windows)
        |> List.filter(w => w.BWindow.id != None)
        |> List.map(setupWindow)
-       |> IOE.all
+       |> BAPI.IOE.all
      )
-  |> IOE.map(windowsAsTrees =>
+  |> IO.map(windowsAsTrees =>
        T.make(Node.make(Session("Current Session")), windowsAsTrees)
      );
 };
 
 let show = Relude.Tree.showPrettyBy(Node.Show.show);
 
-let showPath: path => string =
-  List.reverse
-  >> List.showBy(
-       fun
-       | `Down(x) => Format.sprintf("D%d", x)
-       | `Right(x) => Format.sprintf("R%d", x)
-       | _ => "_",
-     );
-
 let pp = fmt => show >> Format.fprintf(fmt, "%s");
+
+module Path = {
+  type t = path;
+
+  let rec eq = (p1, p2) =>
+    switch (p1, p2) {
+    | ([`Down(n1), ...p1], [`Down(n2), ...p2])
+    | ([`Right(n1), ...p1], [`Right(n2), ...p2]) when n1 == n2 =>
+      eq(p1, p2)
+    | ([], []) => true
+    | _ => false
+    };
+
+  let (==) = eq;
+
+  let show: t => string =
+    List.reverse
+    >> List.showBy(
+         fun
+         | `Down(x) => Format.sprintf("D%d", x)
+         | `Right(x) => Format.sprintf("R%d", x)
+         | _ => "_",
+       );
+
+  let pp = fmt => show >> Format.fprintf(fmt, "%s");
+};
+
+let showPath = Path.show;

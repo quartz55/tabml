@@ -19,7 +19,7 @@ module Styles = {
       overflow(hidden),
       whiteSpace(nowrap),
       flexGrow(0.),
-      color(rgba(0, 0, 0, 0.5)),
+      color(rgba(0, 0, 0, `num(0.5))),
     ]);
 };
 

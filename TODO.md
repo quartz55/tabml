@@ -9,6 +9,8 @@ Tree-style browser session manager webextension made in ReasonML.
 - [ ] Chrome build  
 - [ ] Persist state in localStorage  
 - [ ] Make background script an Event Page (chrome)  
+- [ ] Migrate to ReScript  
+- [ ] More robust monorepo buildsystem (blocked by upstream)  
 
 ### In Progress
 

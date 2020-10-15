@@ -1,14 +1,16 @@
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  PROJECT_ROOT = toString ./.;
+  pwd = toString ./.;
 in
 pkgs.mkShell {
   name = "tabml";
   buildInputs = with pkgs; [
-      nodejs-13_x
+      nodejs-14_x
+      jq
+      entr
   ];
   shellHook = ''
-    export PATH="${PROJECT_ROOT}/node_modules/.bin/:$PATH"
+    export PATH="${pwd}/node_modules/.bin/:$PATH"
   '';
 }

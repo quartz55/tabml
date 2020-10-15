@@ -18,9 +18,9 @@
     "bs-bastet": "^1.2.5",
     "bs-let": "^0.1.16",
     "bs-webext": "workspace:*",
-    "relude": "^0.59.0"
+    "relude": "^0.63.1"
   },
   "devDependencies": {
-    "bs-platform": "^7.2.2"
+    "bs-platform": "^8.2.0"
   }
 }

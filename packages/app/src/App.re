@@ -1,4 +1,3 @@
-open Globals;
 open Core.Globals;
 
 let str = React.string;
@@ -23,33 +22,12 @@ module Styles = {
     ]);
 };
 
-type state = {
-  core: BPort.t(CClient.Action.t, CTree.t),
-  tree: option(Core.Tree.t),
-};
-
-let port =
-  B.Runtime.(connect(~connectInfo=makeConInfo(~name="main", ()), ()));
-
 [@react.component]
 let make = () => {
-  let (state, setState) = React.useState(() => {core: port, tree: None});
-  let fn =
-    React.useCallback0(tree =>
-      setState(({core, _}) => {core, tree: Some(tree)})
-    );
-  React.useEffect0(() => {
-    port.BPort.onMessage |> EL.addListener(fn);
-    Some(() => port.BPort.onMessage |> EL.removeListener(fn));
-  });
-  let dispatch =
-    React.useCallback1(
-      action => {port |> BPort.postMessage(action)},
-      [|port|],
-    );
+  let (tree, dispatch) = Store.(useCore(), dispatch);
 
   <div className=Styles.app>
-    {switch (state.tree) {
+    {switch (tree) {
      | None => <div> {str("Initializing...")} </div>
      | Some(tree) => <div> <Tree tree dispatch /> </div>
      }}

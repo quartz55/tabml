@@ -5,7 +5,8 @@ module Action = {
   type t =
     | Activate(Tree.path)
     | Remove(Tree.path)
-    | ToggleCollapse(Tree.path);
+    | ToggleCollapse(Tree.path)
+    | Move(Tree.path, Tree.path, bool);
 };
 
 type t = {port: BPort.t(Tree.t, Action.t)};
